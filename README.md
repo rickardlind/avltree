@@ -39,11 +39,12 @@ If you need to an AVL tree from Python, use a C module.
 
 # Requirements
 The code has been tested on Ubuntu 18.04 (Python 3.6.9) and Ubuntu 20.04 on WSL2 on Windows 10 (Python 3.8.2).
+
 Building the C module reqires Python headers:
 ```
 sudo apt install python3-dev
 ```
-Generating the graphs reqire `matplotlib`:
+Generating the graphs requires matplotlib:
 ```
 sudo apt install python3-matplotlib python3-cairo
 ```

@@ -3,6 +3,8 @@ HEIGHTS   ?= 5-20
 TRIES     ?= 5
 SEED      ?=
 REPORTS   ?= fill insert delete
+OUTPUT    ?= .
+UNIT      ?= us
 
 .PHONY: help tests extension tables clean distclean
 
@@ -24,26 +26,28 @@ help:
 
 
 tests: extension
-	HEIGHTS=$(HEIGHTS) TRIES=$(TRIES) SEED=$(SEED) ./tests.py $(TESTS)
+	@mkdir -p $(OUTPUT)
+	HEIGHTS=$(HEIGHTS) TRIES=$(TRIES) SEED=$(SEED) OUTPUT=$(OUTPUT) ./tests.py $(TESTS)
 
 extension: cavltree.so
 
-tables: $(REPORTS:%=%.json)
+tables: $(REPORTS:%=$(OUTPUT)/%.json)
 	@for f in $+; do \
-		./stats.py --result $$f --type table; \
+		./stats.py --result $$f --type table --unit $(UNIT); \
 	done
 
-graphs: $(REPORTS:%=%.svg)
+graphs: $(REPORTS:%=$(OUTPUT)/%.svg)
 
 clean:
 	@rm -rf *.o *.so __pycache__
 
 distclean: clean
-	@rm -f *.json *.svg
+	@rm -f $(OUTPUT)/*.json $(OUTPUT)/*.svg
+	@rmdir -p $(OUTPUT) 2>/dev/null || true
 
 cavltree.so: cavltree.c
 	python3 setup.py build_ext
 	mv cavltree.*.so $@
 
-%.svg: %.json
-	./stats.py --result $< --type graph
+$(OUTPUT)/%.svg: $(OUTPUT)/%.json
+	./stats.py --result $< --output $@ --type graph --unit $(UNIT)

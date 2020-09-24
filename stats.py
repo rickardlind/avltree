@@ -22,18 +22,11 @@ def display(field):
     return '%*s' % (W, field)
 
 
-def stats(v, cnt, tries):
-    tot = sum(v) / tries
-    avg = sum(map(lambda x: x / cnt, v)) / tries
-
-    return tot, avg
-
-
 def average(v: list, cnt: int, scale: float) -> float:
     return sum(map(lambda x: (x * scale) / cnt, v)) / len(v)
 
 
-def table(param, test, operation, types, result):
+def table(param, scale, unit, test, operation, types, result):
     """
     Print average time of an operation.
     """
@@ -43,17 +36,17 @@ def table(param, test, operation, types, result):
         line = [ d['height'], d['count'] ]
 
         for t in types:
-            line.append(average(d[t], d['count'], param.scale))
+            line.append(average(d[t], d['count'], scale))
 
         lines.append(line)
 
-    print(f'{test.title()} - {operation} performance:')
+    print(f'{test.title()} - {operation} performance ({unit}s):')
 
     for line in lines:
         print('\t'.join(map(display, line)))
 
 
-def graph(param, test, operation, types, result):
+def graph(param, scale, unit, test, operation, types, result):
     """
     Use matplotlib to create graph as a SVG file.
     """
@@ -67,16 +60,24 @@ def graph(param, test, operation, types, result):
 
         for d in result:
             x.append(d['height'])
-            y.append(average(d[t], d['count'], param.scale))
+            y.append(average(d[t], d['count'], scale))
 
         plt.plot(x, y, label=t)
 
     plt.title(f'{test.title()} performance')
     plt.xlabel('Tree height')
-    plt.ylabel(f'Average {operation} time (\u00B5s)')
+    plt.ylabel(f'Average {operation} time ({unit}s)')
     plt.legend()
 
-    plt.savefig(f'{test}.svg', type='svg')
+    plt.savefig(param.output, type='svg')
+
+
+UNITS = {
+    's':  (1.0,            ''),
+    'ms': (1000.0,         'm'),
+    'us': (1000_000.0,     '\u00B5'),
+    'ns': (1000_000_000.0, 'n')
+}
 
 
 if __name__ == '__main__':
@@ -88,16 +89,20 @@ if __name__ == '__main__':
     ap.add_argument('--result', metavar='PATH', default='result.json',
                     help='Input file (default: result.json)')
 
-    ap.add_argument('--scale', metavar='FACTOR', type=float, default=1000_000.0,
-                    help='Scale factor (default: microseconds)')
+    ap.add_argument('--output', metavar='PATH',
+                    help='output file')
+
+    ap.add_argument('--unit', choices=UNITS, default='us',
+                    help='Time unit (default: microseconds)')
 
     param = ap.parse_args()
+    scale, unit = UNITS[param.unit]
 
     with open(param.result) as fp:
         d = json.load(fp)
 
     if param.type == 'table':
-        table(param, **d)
+        table(param, scale, unit, **d)
 
     else:
-        graph(param, **d)
+        graph(param, scale, unit, **d)

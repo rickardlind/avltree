@@ -184,6 +184,7 @@ class Stopwatch:
 class PerformanceTest(unittest.TestCase):
     HEIGHTS = list(rexp(os.environ.get('HEIGHTS', '5-20')))
     TRIES   = int(os.environ.get('TRIES', 5))
+    OUTPUT  = os.environ.get('OUTPUT', '.')
     TYPES   = [ 'list', 'functional', 'recursive', 'iterative', 'extension' ]
 
 
@@ -267,7 +268,7 @@ class PerformanceTest(unittest.TestCase):
                 self.assertEqual(i, source)
                 self.assertEqual(e, source)
 
-        with open('fill.json', 'w') as fp:
+        with open(os.path.join(self.OUTPUT, 'fill.json'), 'w') as fp:
             json.dump(output, fp, indent=4)
 
 
@@ -364,7 +365,7 @@ class PerformanceTest(unittest.TestCase):
                 self.assertEqual(i, source)
                 self.assertEqual(e, source)
 
-        with open('insert.json', 'w') as fp:
+        with open(os.path.join(self.OUTPUT, 'insert.json'), 'w') as fp:
             json.dump(output, fp, indent=4)
 
 
@@ -467,7 +468,7 @@ class PerformanceTest(unittest.TestCase):
                 self.assertEqual(i, source)
                 self.assertEqual(c, source)
 
-        with open('delete.json', 'w') as fp:
+        with open(os.path.join(self.OUTPUT, 'delete.json'), 'w') as fp:
             json.dump(output, fp, indent=4)
 
 
